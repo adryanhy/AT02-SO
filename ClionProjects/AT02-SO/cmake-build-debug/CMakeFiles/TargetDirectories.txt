@@ -1,0 +1,3 @@
+C:/Users/aluno/CLionProjects/AT02-SO/cmake-build-debug/CMakeFiles/AT02_SO.dir
+C:/Users/aluno/CLionProjects/AT02-SO/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/aluno/CLionProjects/AT02-SO/cmake-build-debug/CMakeFiles/rebuild_cache.dir
