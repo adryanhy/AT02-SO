@@ -1,84 +1,84 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void lfu(int *referencias, int num_referencias, int num_paginas, int *paginas, int *faltas_pagina) {
-    int i, j, k;
-    int *frequencias = (int *)malloc(num_paginas * sizeof(int));
-    int *presente = (int *)malloc(num_paginas * sizeof(int));
+typedef struct {
+    int num_pag;
+} Page;
 
-    for (i = 0; i < num_paginas; i++) {
-        paginas[i] = -1;
-        frequencias[i] = 0;
-        presente[i] = 0;
-    }
-
-    for (i = 0; i < num_referencias; i++) {
-        int pagina_referenciada = referencias[i];
-        int pagina_presente = 0;
-
-        // Verificar se a página já está na memória
-        for (j = 0; j < num_paginas; j++) {
-            if (paginas[j] == pagina_referenciada) {
-                frequencias[j]++;
-                pagina_presente = 1;
-                break;
-            }
-        }
-
-        // Se a página não estiver na memória, substituir a página menos frequentemente usada
-        if (!pagina_presente) {
-            (*faltas_pagina)++;
-
-            // Encontrar a página menos frequentemente usada
-            int pagina_substituir = 0;
-            for (j = 1; j < num_paginas; j++) {
-                if (frequencias[j] < frequencias[pagina_substituir]) {
-                    pagina_substituir = j;
-                }
-            }
-
-            // Substituir a página
-            paginas[pagina_substituir] = pagina_referenciada;
-            frequencias[pagina_substituir] = 1;
+void fifo(Page pages[], int num_pages, int page_number, int* falta_paginas) {
+    int found = 0;
+    for (int i = 0; i < num_pages; i++) {
+        if (pages[i].num_pag == page_number) {
+            found = 1;
+            break;
         }
     }
 
-    free(frequencias);
-    free(presente);
+    if (!found) {
+        pages[0].num_pag = page_number;
+        (*falta_paginas)++;
+    }
 }
 
 int main() {
-    int num_paginas, num_referencias;
+    int num_paginas;
 
-    printf("Digite a quantidade de páginas para simular o algoritmo: ");
+    printf("Digite a quantidade de paginas: ");
     scanf("%d", &num_paginas);
 
-    printf("Digite o número de referências: ");
-    scanf("%d", &num_referencias);
-
-    int *referencias = (int *)malloc(num_referencias * sizeof(int));
-    printf("Digite os valores das referências: ");
-    for (int i = 0; i < num_referencias; i++) {
-        scanf("%d", &referencias[i]);
+    if (num_paginas <= 0) {
+        printf("A quantidade de paginas deve ser maior que zero.\n");
+        return 1;
     }
 
-    int *paginas = (int *)malloc(num_paginas * sizeof(int));
-    int faltas_pagina = 0;
+    Page* pages = malloc(num_paginas * sizeof(Page));
 
-    lfu(referencias, num_referencias, num_paginas, paginas, &faltas_pagina);
+    if (pages == NULL) {
+        printf("Erro na alocacao de memoria.\n");
+        return 1;
+    }
 
-    printf("\nConteúdo final das páginas de memória:\n");
     for (int i = 0; i < num_paginas; i++) {
-        if (paginas[i] == -1)
-            printf("Vazia\n");
-        else
-            printf("%d\n", paginas[i]);
+        pages[i].num_pag = -1;
     }
 
-    printf("Quantidade de faltas de página: %d\n", faltas_pagina);
+    int num_references;
+    printf("Digite a quantidade de referencias a pagina: ");
+    scanf("%d", &num_references);
 
-    free(referencias);
-    free(paginas);
+    int* page_references = malloc(num_references * sizeof(int));
+
+    if (page_references == NULL) {
+        printf("Erro na alocacao de memoria.\n");
+        free(pages);
+        return 1;
+    }
+
+    printf("Digite as referencias a pagina:\n");
+    for (int i = 0; i < num_references; i++) {
+        scanf("%d", &page_references[i]);
+    }
+
+    int qtdFaltaPaginas = 0;
+
+    for (int i = 0; i < num_references; i++) {
+        fifo(pages, num_paginas, page_references[i], &qtdFaltaPaginas);
+
+        printf("Paginas: ");
+        for (int j = 0; j < num_paginas; j++) {
+            if (pages[j].num_pag == -1) {
+                printf(" - ");
+            } else {
+                printf("%d ", pages[j].num_pag);
+            }
+        }
+        printf("\n");
+    }
+
+    printf("Quantidade de falta de pagina: %d\n", qtdFaltaPaginas);
+
+    free(pages);
+    free(page_references);
 
     return 0;
 }
